@@ -16,3 +16,21 @@ crew = [
 # - Find the crew member and update the details
 # - Return the updated crew member details
 # - Return a "Crew member not found" message if the crew member does not exist
+
+@app.put("/update_crew/{crew_id}")
+async def update_crew_member(request: Request, crew_id: int):
+    data = await request.json()
+    upd_name = data.get("name")
+    upd_role = data.get("role")
+
+    for member in crew:
+        if member["id"] == crew_id:
+            if upd_name:
+                member["name"] = upd_name
+            if upd_role:
+                member ["role"] = upd_role
+            return {"upd_crew_member": member}
+        
+    return {"message": "Crew member not found"}
+
+    
