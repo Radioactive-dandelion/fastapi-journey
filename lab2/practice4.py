@@ -17,6 +17,13 @@ crew = [
 # - If the crew member is found, return their details in JSON format
 # - If not found, return a message indicating the crew member was not found
 
+@app.get("/members/{crew_id}")
+async def read_crew_member(crew_id: int):
+    for member in crew:
+        if member["id"] == crew_id:
+            return member
+        
+    return {"message": "The crew member was not found"}
 
 # TODO: Create a POST endpoint to add a new crew member
 # - The endpoint path should be "/members/"
@@ -25,6 +32,18 @@ crew = [
 # - Create a new crew member with a unique ID and add it to the crew list
 # - Return the details of the new crew member
 
+@app.post("/members/")
+async def add_crew_member(request: Request):
+    data = await request.json()
+    name = data.get("name")
+    role = data.get("role")
+
+    crew_id = max(member["id"] for member in crew) + 1 if crew else 1
+
+    new_member = {"id": crew_id, "name": name, "role": role}
+    crew.append(new_member)
+
+    return {"crew": crew_id, "new_member": new_member}
 
 # TODO: Create a PUT endpoint to update an existing crew member's details
 # - The endpoint path should be "/members/{crew_id}"
@@ -33,9 +52,34 @@ crew = [
 # - If the crew member is found, update their details
 # - If not found, return a message indicating the crew member was not found
 
+@app.put("/members/{crew_id}")
+async def update_crew_member(request: Request, crew_id: int):
+    data = await request.json()
+    upd_name = data.get("name")
+    upd_role = data.get("role")
+
+    for member in crew:
+        if member["id"] == crew_id:
+            if upd_name:
+                member["name"] = upd_name
+            if upd_role:
+                member ["role"] = upd_role
+            return {"upd_crew_member": member}
+        
+    return {"message": "The crew member was not found"}
+
 
 # TODO: Create a DELETE endpoint to remove a crew member by ID
 # - The endpoint path should be "/members/{crew_id}"
 # - The function should be async and named 'delete_crew_member'
 # - If the crew member is found, remove them from the crew list
 # - If not found, return a message indicating the crew member was not found
+
+@app.delete("/members/{crew_id}")
+async def delete_crew_member(crew_id: int):
+    for member in crew:
+        if member["id"] == crew_id:
+            crew.remove(member)
+            return {"message": "Crew member removed"}
+    
+    return {"message": "The crew member was not found"}
