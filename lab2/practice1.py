@@ -14,3 +14,16 @@ crew = [
 # - Create a new ID for the new crew member by finding the maximum ID in the database and adding 1, or using 1 if the database is empty
 # - Add the new member to the mock database with the new ID
 # - Return a JSON response with the new crew member's ID and details
+
+@app.post("/add_crew/")
+async def add_crew_member(request: Request):
+    data = await request.json()
+    name = data.get("name")
+    role = data.get("role")
+
+    crew_id = max(member["id"] for member in crew) + 1 if crew else 1
+
+    new_member = {"id": crew_id, "name": name, "role": role}
+    crew.append(new_member)
+
+    return {"crew": crew_id, "new_member": new_member}
