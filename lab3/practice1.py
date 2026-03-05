@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 # TODO: Import BaseModel from pydantic
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -17,10 +18,18 @@ books = [
 # - author
 # - year
 
+class Book(BaseModel):
+    title: str
+    author: str
+    year: int
+
 
 # TODO: Define a GET endpoint receiving the id and use the response model
 # Use the URL: /books/{book_id}
     # Finding the book in books
+
+@app.get("/books/{book_id}", response_model = Book)
+async def find_book (book_id: int):
     for book in books:
         if book["id"] == book_id:
             return book
