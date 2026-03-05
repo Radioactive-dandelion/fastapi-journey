@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -16,6 +17,18 @@ crew = [
 # - experience
 # - specialty
 
+class CrewMember(BaseModel):
+    name: str
+    role: str
+    experience: int
+    specialty: str
 
 # TODO: Define a POST endpoint receiving a crew member model
 # Use the code provided in the description to handle the database and response
+
+@app.post("/crew/")
+async def add_crew_member (member: CrewMember):
+    member_id = max(c["id"] for c in crew) + 1 if crew else 1
+    data_dict = {"id": member_id, **member.dict()}
+    crew.append(data_dict)
+    return {"message": "Crew member added successfully", "details": data_dict}
