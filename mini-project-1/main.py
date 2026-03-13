@@ -29,6 +29,7 @@ async def update_patient(patient_id: int, updated_patient: Patient):
     for idx, patient in enumerate(patients):
         if patient.id == patient_id:
             patients[idx] = updated_patient
+            return updated_patient
     raise HTTPException(status_code = 404, detail = "Patient not found")
         
 
