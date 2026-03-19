@@ -1,9 +1,13 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from models import Patient
 import asyncio
 from typing import List
 
 patient_router = APIRouter()
+
+templates = Jinja2Templates(directory="mini-project-1/templates") #There is a problem with the directory, it needs to be replaced with templates = Jinja2Templates(directory="templates") and use cd mini-project-1, uvicorn main:app --reload
 
 patients: List[Patient] = []
 
@@ -51,3 +55,23 @@ async def remove_patient(patient_id: int):
         status_code=404,
         detail=f"Patient with ID {patient_id} was not found"
     )
+
+@patient_router.get("/home", response_class=HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("home.html", {
+        "request": request,
+        "patients": patients
+    })
+
+@patient_router.get("/patient/{patient_id}", response_class=HTMLResponse)
+async def get_patient_page(request: Request, patient_id: int):
+    for patient in patients:
+        if patient.id == patient_id:
+            return templates.TemplateResponse("patient.html", {
+                "request": request,
+                "patient": patient
+            })
+    raise HTTPException(
+    status_code=404,
+    detail=f"Patient with ID {patient_id} was not found"
+)
