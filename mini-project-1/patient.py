@@ -17,7 +17,10 @@ async def read_patient_information_by_id(patient_id: int):
     for patient in patients:
         if patient.id == patient_id:
             return patient
-    raise HTTPException(status_code = 404, detail = "Patient not found")
+    raise HTTPException(
+        status_code=404,
+        detail=f"Patient with ID {patient_id} was not found"
+    )
 
 @patient_router.post("/patients/", response_model=Patient)
 async def add_patient(patient: Patient):
@@ -30,7 +33,10 @@ async def update_patient(patient_id: int, updated_patient: Patient):
         if patient.id == patient_id:
             patients[idx] = updated_patient
             return updated_patient
-    raise HTTPException(status_code = 404, detail = "Patient not found")
+    raise HTTPException(
+        status_code=404,
+        detail=f"Patient with ID {patient_id} was not found"
+    )
         
 
 
@@ -41,4 +47,7 @@ async def remove_patient(patient_id: int):
         if patient.id == patient_id:
             patients.pop(idx)
             return {"message": "Patient deleted"}
-    raise HTTPException(status_code = 404, detail = "Patient not found")
+    raise HTTPException(
+        status_code=404,
+        detail=f"Patient with ID {patient_id} was not found"
+    )
