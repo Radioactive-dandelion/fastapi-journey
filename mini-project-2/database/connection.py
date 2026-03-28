@@ -1,9 +1,7 @@
-import os
-from beanie import init_beanie
+from typing import Type, List
+from beanie import init_beanie, Document
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic_settings import BaseSettings
-from typing import Type, List
-from beanie import Document
 
 class Settings(BaseSettings):
     DATABASE_URL: str
@@ -15,7 +13,10 @@ settings = Settings()
 
 async def initialize_database(documents: List[Type[Document]]):
     client = AsyncIOMotorClient(settings.DATABASE_URL)
-    await init_beanie(database=client.get_default_database(), document_models=documents)
+    await init_beanie(
+        database=client["planner"],
+        document_models=documents
+    )
 
 class Database:
     def __init__(self, model: Type[Document]):
