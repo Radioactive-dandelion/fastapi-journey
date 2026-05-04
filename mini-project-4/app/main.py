@@ -2,7 +2,10 @@ from fastapi import FastAPI, HTTPException
 from .schemas import PollCreate, VoteRequest
 from .models import Poll
 from .storage import polls
+from fastapi import WebSocket, WebSocketDisconnect
+from .websocket_manager import ConnectionManager
 
+manager = ConnectionManager()
 app = FastAPI()
 
 @app.post("/polls")
@@ -59,3 +62,31 @@ def delete_poll(poll_id: str):
     del polls[poll_id]
     return {"message": "Poll deleted"}
 
+@app.websocket("/ws/polls/{poll_id}")
+async def websocket_endpoint(websocket: WebSocket, poll_id: str):
+    await manager.connect(poll_id, websocket)
+
+    try:
+        while True:
+            data = await websocket.receive_json()
+
+            option = data.get("option")
+
+            poll = polls.get(poll_id)
+            if not poll:
+                await websocket.send_json({"error": "Poll not found"})
+                continue
+
+            if option not in poll.votes:
+                await websocket.send_json({"error": "Invalid option"})
+                continue
+
+            poll.votes[option] += 1
+
+            await manager.broadcast(poll_id, {
+                "type": "vote_update",
+                "votes": poll.votes
+            })
+
+    except WebSocketDisconnect:
+        manager.disconnect(poll_id, websocket)
