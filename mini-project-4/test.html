@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<body>
+<h2>WebSocket Test</h2>
+
+<h3>Who is the best artist?</h3>
+<button onclick="vote('Van Gogh')">Vote Van Gogh</button>
+<button onclick="vote('Claude Monet')">Vote Claude Monet</button>
+<button onclick="vote('Salvador Dali')">Vote Salvador Dali</button>
+
+<script>
+const ws = new WebSocket("ws://127.0.0.1:8000/ws/polls/839083b2-a164-4110-9865-11b6711c2329");
+
+ws.onopen = () => {
+    console.log("✅ Connected");
+};
+
+ws.onclose = () => {
+    console.log("❌ Disconnected");
+};
+
+ws.onerror = (err) => {
+    console.log("⚠️ Error:", err);
+};
+
+ws.onmessage = (event) => {
+    console.log("📩 Received:", event.data);
+};
+
+function vote(option) {
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ option }));
+    } else {
+        console.log("❌ WebSocket not open");
+    }
+}
+</script>
+</body>
+</html>
