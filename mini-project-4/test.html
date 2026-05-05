@@ -1,39 +1,62 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Real-Time Poll</title>
+</head>
 <body>
-<h2>WebSocket Test</h2>
 
-<h3>Who is the best artist?</h3>
-<button onclick="vote('Van Gogh')">Vote Van Gogh</button>
-<button onclick="vote('Claude Monet')">Vote Claude Monet</button>
-<button onclick="vote('Salvador Dali')">Vote Salvador Dali</button>
+<h2>Who is the best artist?</h2>
+
+<div id="buttons"></div>
+
+<h3>Results:</h3>
+<ul id="results"></ul>
 
 <script>
-const ws = new WebSocket("ws://127.0.0.1:8000/ws/polls/839083b2-a164-4110-9865-11b6711c2329");
+const pollId = "839083b2-a164-4110-9865-11b6711c2329";
+const ws = new WebSocket(`ws://127.0.0.1:8000/ws/polls/${pollId}`);
+
+const options = ["Van Gogh", "Claude Monet", "Salvador Dali"];
+
+const buttonsDiv = document.getElementById("buttons");
+const resultsList = document.getElementById("results");
+
+options.forEach(option => {
+    const btn = document.createElement("button");
+    btn.innerText = option;
+    btn.onclick = () => vote(option);
+    buttonsDiv.appendChild(btn);
+});
+
+function vote(option) {
+    ws.send(JSON.stringify({ option }));
+}
+
+function updateResults(votes) {
+    resultsList.innerHTML = "";
+    for (const option in votes) {
+        const li = document.createElement("li");
+        li.innerText = `${option}: ${votes[option]}`;
+        resultsList.appendChild(li);
+    }
+}
 
 ws.onopen = () => {
-    console.log("✅ Connected");
-};
-
-ws.onclose = () => {
-    console.log("❌ Disconnected");
-};
-
-ws.onerror = (err) => {
-    console.log("⚠️ Error:", err);
+    console.log("Connected");
 };
 
 ws.onmessage = (event) => {
-    console.log("📩 Received:", event.data);
+    const data = JSON.parse(event.data);
+
+    if (data.type === "vote_update") {
+        updateResults(data.votes);
+    }
 };
 
-function vote(option) {
-    if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ option }));
-    } else {
-        console.log("❌ WebSocket not open");
-    }
-}
+ws.onclose = () => {
+    console.log("Disconnected");
+};
 </script>
+
 </body>
 </html>
